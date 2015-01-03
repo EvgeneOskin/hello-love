@@ -55,3 +55,50 @@ function Character:fixXPosition(width)
       self.x = self.size
    end
 end
+
+
+AnimatedCharacter = class(
+   Character,
+   function(ac, x, y, scale, velosities, sprite, frames_number, quads_builder)
+      Character.init(ac, x, y, scale, velosities)
+      ac.sprite = sprite
+      ac.iteration = 1
+      ac.max_iteration = frames_number
+      ac.direction = 'left'
+      ac.quads = {}
+      ac.quads['right'] = {}
+      ac.quads['left'] = {}
+      ac.quads['up'] = {}
+      ac.quads['down'] = {}
+      for i = 1, ac.max_iteration do
+         ac.quads['right'][i] = quads_builder:build((i-1), 0)
+         ac.quads['left'][i] = quads_builder:build((i-1), 0)
+         ac.quads['up'][i] = quads_builder:build(1, 0)
+         ac.quads['down'][i] = quads_builder:build(1, 0)
+         ac.quads.left[i]:flip(true, false) -- flip horizontally x=true, y=false
+      end
+   end
+)
+
+function AnimatedCharacter:updateIteration()
+   self.iteration = self.iteration + 1
+   if self.iteration > self.max_iteration then
+      self:resetIteration()
+   end
+end
+
+function AnimatedCharacter:resetIteration()
+   self.iteration = 1
+end
+
+function AnimatedCharacter:setDirection(direction)
+   if self.quads[direction] then
+      self.direction = direction
+      return true
+   end
+   return false
+end
+
+function AnimatedCharacter:getCurrentQuad()
+   return self.quads[self.direction][self.iteration]
+end
